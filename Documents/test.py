@@ -9,7 +9,43 @@ try:
     from evdev import InputDevice, list_devices, ecodes
 except ImportError:
     print ('Not importing evdev, expected during sphinx generation on OSX')
-
+'''
+        if (self.joysticks[0].get_axis(1) > 0.1 or self.joysticks[0].get_axis(1) < -0.1 or self.joysticks[0].get_axis(0) > 0.1 or self.joysticks[0].get_axis(0) < -0.1):
+            if self.joysticks[0].get_button(self.buttons['x']) == 1:
+                print("x")
+                lock *= -1
+                servo_pos1 = jAxis - (self.joysticks[0].get_axis(0) * const.SERVO_CENTER)
+                servo_pos2 = jAxis - (self.joysticks[0].get_axis(1) * const.SERVO_CENTER)
+            else:
+                self.rotate_servo(const.SERVO2, jAxis - (self.joysticks[0].get_axis(0) * const.SERVO_CENTER))
+                self.rotate_servo(const.SERVO3, jAxis - (self.joysticks[0].get_axis(1) * const.SERVO_CENTER))
+        else:
+        
+            if lock > 0:
+                self.rotate_servo(const.SERVO2, servo_pos1)
+                self.rotate_servo(const.SERVO3, servo_pos2)
+            else:
+                self.rotate_servo(const.SERVO2, jAxis)
+                self.rotate_servo(const.SERVO3, jAxis)
+             
+                 
+        if self.joysticks[0].get_button(self.buttons['r1']) == 1:
+            print(self.buttons['r1'])
+            self.board.digital[const.RIGHT_DIGI1].write(const.HIGH)
+            self.board.digital[const.RIGHT_DIGI2].write(const.LOW)
+            self.board.digital[const.RIGHT_PWM].write(const.HIGH)
+        elif self.joysticks[0].get_button(self.buttons['r2']) == 1:
+            print(self.buttons['r2'])
+            self.board.digital[const.RIGHT_DIGI1].write(const.LOW)
+            self.board.digital[const.RIGHT_DIGI2].write(const.HIGH)
+            self.board.digital[const.RIGHT_PWM].write(const.HIGH)
+        else:
+            self.board.digital[const.RIGHT_PWM].write(const.LOW)
+            self.board.digital[const.LEFT_PWM].write(const.LOW)
+            if (controller.get_axes()[1].value > 0.1 or controller.get_axes()[1].value < -0.1 or controller.get_axes()[0].value > 0.1 or controller.get_axes()[0].value < -0.1):
+                r.rotate_servo(const.SERVO2, 90 - (controller.get_axes()[0].value * const.SERVO_CENTER))
+            r.rotate_servo(const.SERVO3, 90 - (controller.get_axes()[1].value * const.SERVO_CENTER))
+     '''       
 
 class SixAxisResource:
 

@@ -4,7 +4,7 @@ from threading import Thread
 try:
     from evdev import InputDevice, list_devices, ecodes
 except ImportError:
-    print ('Not importing evdev, expected during sphinx generation on OSX')
+    print ('Did not import device')
 
 class SixAxis:
     BUTTON_SELECT = 0  # : The Select button
@@ -25,19 +25,12 @@ class SixAxis:
     BUTTON_SQUARE = 15  # : Square
     BUTTON_PS = 16  # : PS button
 
-    def __init__(self, dead_zone=0.05, hot_zone=0.0, connect=False):
+    def __init__(self, connect=False):
         self.buttons_pressed = 0
         self.button_handlers = []
         self._stop_function = None
-        self.axes = [SixAxis.Axis('left_x', dead_zone=dead_zone,
-                     hot_zone=hot_zone), SixAxis.Axis('left_y',
-                     dead_zone=dead_zone, hot_zone=hot_zone,
-                     invert=True), SixAxis.Axis('right_x',
-                     dead_zone=dead_zone, hot_zone=hot_zone),
-                     SixAxis.Axis('right_y', dead_zone=dead_zone,
-                     hot_zone=hot_zone, invert=True)]
-
-
+        self.axes = [SixAxis.Axis('left_x'), SixAxis.Axis('left_y'),
+                     SixAxis.Axis('right_x'), SixAxis.Axis('right_y')]
         if connect:
             self.connect()
 
@@ -70,7 +63,7 @@ class SixAxis:
                     def handle_error(self):
                         print("Controller Disconnected")
                         parent.disconnect()
-                                            self.close()
+                        self.close()
 
                 class AsyncLoop(Thread):
 
@@ -96,15 +89,6 @@ class SixAxis:
             self._stop_function()
             self._stop_function = None
 
-    def __str__(self):
-        return 'x1={}, y1={}, x2={}, y2={}'.format(self.axes[0].value,
-                self.axes[1].value,
-                self.axes[2].value,
-                self.axes[3].value)
-    
-    def get_axes(self):
-        return self.axes 
-
     def reset_axis_calibration(self):
         # Resets axis to 0.0 for all axes
         for axis in self.axes:
@@ -128,7 +112,6 @@ class SixAxis:
     def handle_event(self, event):
         if event.type == ecodes.EV_ABS:
             value = float(event.value) / 127
-                       
             if event.code == 0:
                 # Left stick, X axis
                 self.axes[0]._set(value)
@@ -186,23 +169,23 @@ class SixAxis:
                     for button_handler in self.button_handlers:
                         if button_handler['mask'] & 1 << button != 0:
                             button_handler['handler'](button)
-
+                            
+    def __str__(self):
+        return 'x1={}, y1={}, x2={}, y2={}'.format(self.axes[0].value,
+                self.axes[1].value,
+                self.axes[2].value,
+                self.axes[3].value)
+    
+    def get_axes(self):
+        return self.axes
+    
     class Axis:
-        def __init__(
-            self,
-            name,
-            invert=False,
-            dead_zone=0.0,
-            hot_zone=0.0,
-            ):
+        def __init__(self, name, invert=False):
             self.name = name
-            self.center = 0.5
             self.max = 0.9
             self.min = 0.1
-            self.value = 0.5
+            self.value = 0.0
             self.invert = invert
-            self.dead_zone = dead_zone
-            self.hot_zone = hot_zone
 
         def _set(self, new_value):
             self.value = new_value
@@ -212,9 +195,9 @@ class SixAxis:
                 self.min = new_value
                 
         def _reset(self):
-            self.center = 0.5
             self.max = 0.9
             self.min = 0.1
+            self.value = 0.0
             
         def _get(self):
             return self.value
